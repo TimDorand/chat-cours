@@ -24,45 +24,51 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-  (function ($) {
-    var cacheSelector = {};
-    var socket = io();
-    var users = $('#users');
-    var messages = $('#messages ');
-    var username;
+    (function ($) {
+        var cacheSelector = {};
+        var socket = io();
+        var users = $('#users');
+        var messages = $('#messages ');
+        var username;
 
-    if (typeof(Storage) !== undefined) {
-      username = localStorage.getItem('username');
-      console.log(`username frome localStorage is ${username}`);
-    }
+        if (typeof(Storage) !== undefined) {
+            username = localStorage.getItem('username');
+            console.log(`username from localStorage is ${username}`);
+        }
 
-    while (username === undefined || username === null || username.trim() === '') {
-      username = prompt('What is your username?');
+        while (username === undefined || username === null || username.trim() === '') {
+            username = prompt('What is your username?');
 
-      if (typeof(Storage) !== undefined) {
-        localStorage.setItem('username', username);
-      }
-    }
+            if (typeof(Storage) !== undefined) {
+                localStorage.setItem('username', username);
+            }
+        }
 
-    socket.emit('chat.join', JSON.stringify({ 'username': username }));
+        socket.emit('chat.join', JSON.stringify({ 'username': username }));
 
-    cacheSelector.message = $('#m');
-    $('form').submit(function(){
-      socket.emit('chat.message', cacheSelector.message.val());
-      cacheSelector.message.val('');
-      return false;
-    });
+        cacheSelector.message = $('#m');
+        $('form').submit(function(){
+            socket.emit('chat.message', cacheSelector.message.val());
+            cacheSelector.message.val('');
+            return false;
+        });
 
-    socket.on('chat.join', (data) => {
-      console.log('chat.join');
-      var json = JSON.parse(data);
-      users.append(`<li>${json.username}</li>`);
-    });
+        socket.on('chat.join', (data) => {
+            console.log('chat.join');
+            var json = JSON.parse(data);
+            users.append(`<li>${json.username}</li>`);
+        });
 
-    socket.on('chat.message', (message) => {
-      messages.append(`<li>${message}</li>`);
-    });
-  })(jQuery);
+        socket.on('chat.message', (json) => {
+            console.log('chat.message => ', json);
+            const data = JSON.parse(json);
+
+            messages.append(`<li>${data.username} : ${data.message}</li>`);
+
+        });
+
+
+    })(jQuery);
 </script>
 
 </body>
