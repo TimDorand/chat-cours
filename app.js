@@ -34,6 +34,10 @@ io.on('connection', function(socket){
             console.log(res);
         });
 
+        client.lrange('messages', 0, 19, (err, msgs) => {
+            socket.emit('messages.getAll', msgs);
+        });
+
         //2. broadcast
         socket.broadcast.emit('chat.join', JSON.stringify({'username': socket.username}));
         /*client.smembers('users', function(err, res) {
@@ -49,6 +53,10 @@ io.on('connection', function(socket){
     socket.on('chat.message', function(message){
         consoleLog('chat', 'message', ('[' + socket.username + ']').bold + ' message : ' + message);
         const json = JSON.stringify({username: socket.username, message});
+
+        client.lpush('messages', json, (err, reply) => {
+            console.log('redis lpush => ' + reply);
+        });
 
         socket.broadcast.emit('chat.message', json);
         socket.emit('chat.message', json);

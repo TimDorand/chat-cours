@@ -30,7 +30,7 @@
         var users = $('#users');
         var messages = $('#messages ');
         var username;
-        
+
         if (typeof(Storage) !== undefined) {
             username = localStorage.getItem('username');
             console.log(`username from localStorage is ${username}`);
@@ -61,12 +61,21 @@
 
         socket.on('chat.message', (json) => {
             console.log('chat.message => ', json);
-            const data = JSON.parse(json);
-
-            messages.append(`<li>${data.username} : ${data.message}</li>`);
-
+            showMsg(json);
         });
 
+        socket.on('messages.getAll', (datas) => {
+            datas.forEach(function(msg) {
+                showMsg(msg);
+            })
+        })
+
+        function showMsg (json) {
+            const data = JSON.parse(json);
+            var author_msg = "";
+            username === data.username ? author_msg = "Moi" : author_msg = data.username;
+            messages.append(`<li>${author_msg} : ${data.message}</li>`);
+        }
 
     })(jQuery);
 </script>
