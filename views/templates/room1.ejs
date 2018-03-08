@@ -26,14 +26,14 @@
 <script>
   (function ($) {
     var cacheSelector = {};
-    var socket = io();
+    var socket = io('/room1');
     var users = $('#users');
     var messages = $('#messages ');
     var username;
 
     if (typeof(Storage) !== undefined) {
       username = localStorage.getItem('username');
-      console.log(`username frome localStorage is ${username}`);
+      console.log(`username from localStorage is ${username}`);
     }
 
     while (username === undefined || username === null || username.trim() === '') {
