@@ -28,28 +28,20 @@ io.on('connection', function(socket){
 
     consoleLog('chat', 'join', `${socket.username} has IP ${user_ip}`);
 
-    let user_infos = {
-      'ip': user_ip,
-      'username': json.username
-    };
-
-    console.log(JSON.stringify(user_infos));
-
-    client.lpush('users', JSON.stringify({'username': json.username, 'ip': socket.userIp}), (err, res) => {
-      consoleLog('redis', 'LPUSH', `Add ${socket.username} to user list`);
+    client.sadd(['users', JSON.stringify({'username': json.username, 'ip': socket.userIp})], (err, res) => {
+      consoleLog('redis', 'SADD', `Add ${socket.username} to user Set`);
+      console.log(res);
     });
 
     //2. broadcast
     socket.broadcast.emit('chat.join', JSON.stringify({'username': socket.username}));
-    client.lrange('users', 0, -1, function (err, res) {
+    client.smembers('users', function(err, res) {
       if (err) throw(err);
       console.log(res);
 
       for (let data of res) {
-
+        socket.emit('chat.join', data);
       }
-
-      socket.emit('chat.join', JSON.stringify({'username': socket.username}));
     });
   });
 
