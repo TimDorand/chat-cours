@@ -29,9 +29,22 @@
     var socket = io();
     var users = $('#users');
     var messages = $('#messages ');
-    var username = prompt('your username ? ');
+    var username;
 
-    socket.emit('chat.join', username);
+    if (typeof(Storage) !== undefined) {
+      username = localStorage.getItem('username');
+      console.log(`username frome localStorage is ${username}`);
+    }
+
+    while (username === undefined || username === null || username.trim() === '') {
+      username = prompt('What is your username?');
+
+      if (typeof(Storage) !== undefined) {
+        localStorage.setItem('username', username);
+      }
+    }
+
+    socket.emit('chat.join', JSON.stringify({ 'username': username }));
 
     cacheSelector.message = $('#m');
     $('form').submit(function(){
@@ -40,9 +53,10 @@
       return false;
     });
 
-    socket.on('chat.join', (username, all_users) => {
-      console.log(all_users);
-      users.append(`<li>${username}</li>`);
+    socket.on('chat.join', (data) => {
+      console.log('chat.join');
+      var json = JSON.parse(data);
+      users.append(`<li>${json.username}</li>`);
     });
 
     socket.on('chat.message', (message) => {

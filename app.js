@@ -18,31 +18,39 @@ io.on('connection', function(socket){
 
   socket.broadcast.emit('hi');
 
-  socket.on('chat.join', username => {
+  socket.on('chat.join', (data) => {
     const user_ip = requestIp.getClientIp(socket.request);
-    consoleLog('chat', 'join', `${username} has IP ${user_ip}`);
+    const json = JSON.parse(data);
+
     //1. save username
-    // DELETE Hash Key : client.hdel('frameworks', 'javascript', 'AngularJS', 'css', 'Bootstrap', 'node', 'Express');
-    socket.username = username;
+    socket.username = json.username;
     socket.userIp = user_ip;
+
+    consoleLog('chat', 'join', `${socket.username} has IP ${user_ip}`);
 
     let user_infos = {
       'ip': user_ip,
-      'username': username
+      'username': json.username
     };
 
     console.log(JSON.stringify(user_infos));
 
-    client.hmset(username, {
-      username: JSON.stringify(user_infos)
-    });
-
-    client.hgetall(username, function(err, object) {
-      console.log(object);
+    client.lpush('users', JSON.stringify({'username': json.username, 'ip': socket.userIp}), (err, res) => {
+      consoleLog('redis', 'LPUSH', `Add ${socket.username} to user list`);
     });
 
     //2. broadcast
-    socket.broadcast.emit('chat.join', username);
+    socket.broadcast.emit('chat.join', JSON.stringify({'username': socket.username}));
+    client.lrange('users', 0, -1, function (err, res) {
+      if (err) throw(err);
+      console.log(res);
+
+      for (let data of res) {
+
+      }
+
+      socket.emit('chat.join', JSON.stringify({'username': socket.username}));
+    });
   });
 
   socket.on('chat.message', function(msg){
