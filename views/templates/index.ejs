@@ -14,22 +14,49 @@
     </style>
 </head>
 <body>
-<ul id="users"></ul>
-<ul id="messages"></ul>
-<form action="">
-    <input id="m" autocomplete="off"/>
-    <button>Send</button>
-</form>
+
+<div>
+    <aside>
+        <div class="rooms"></div>
+        <div class="new_room">
+            <input type="text" class="room_name_input" name="room_name">
+            <button class="add_room">+ Add new room</button>
+        </div>
+    </aside>
+    <ul id="users"></ul>
+    <ul id="messages"></ul>
+    <form action="">
+        <input id="m" autocomplete="off"/>
+        <button>Send</button>
+    </form>
+</div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
   (function ($) {
+    var selectors = {
+      rooms: document.querySelector('.rooms')
+    };
     var cacheSelector = {};
     var socket = io();
     var users = $('#users');
-    var messages = $('#messages ');
+    var messages = $('#messages');
     var username;
+    var channel_name = "home";
+    var add_btn = document.querySelector('.add_room');
+    var new_channel_name = document.querySelector('.room_name_input');
+
+    add_btn.addEventListener('click', () => {
+      if (new_channel_name.value === '') {
+        alert('new room name cannot be null!!');
+        return;
+      }
+
+      socket.emit('room.create', JSON.stringify({ 'username': username }), new_channel_name.value);
+
+      new_channel_name.value = '';
+    })
 
     if (typeof(Storage) !== undefined) {
       username = localStorage.getItem('username');
@@ -44,7 +71,7 @@
       }
     }
 
-    socket.emit('chat.join', JSON.stringify({ 'username': username }));
+    socket.emit('chat.join', JSON.stringify({ 'username': username }), channel_name);
 
     cacheSelector.message = $('#m');
     $('form').submit(function(){
@@ -55,12 +82,30 @@
 
     socket.on('chat.join', (data) => {
       console.log('chat.join');
-      var json = JSON.parse(data);
-      users.append(`<li>${json.username}</li>`);
+      users.append(`<li class="${data.username}">${data.username}</li>`);
     });
 
     socket.on('chat.message', (message) => {
       messages.append(`<li>${message}</li>`);
+    });
+
+    socket.on('chat.leave', (user) => {
+      console.log('chat.leave');
+      messages.append(`<span>${user.username} leaved the channel</span>`);
+      $(`li.${user.username}`).remove();
+    });
+
+    socket.on('rooms', (rooms) => {
+      rooms.forEach(room => {
+        var div = document.createElement('div');
+
+        console.log(room);
+        div.className = 'room';
+        div.id = room;
+        div.innerHTML = `<a href="#">${room}</a>`;
+
+        selectors.rooms.appendChild(div);
+      });
     });
   })(jQuery);
 </script>

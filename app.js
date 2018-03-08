@@ -14,45 +14,83 @@ function consoleLog(event, method, msg = undefined) {
 }
 
 app.get('/', (req, res) => res.render(__dirname + '/views/templates/index'));
+app.get('/room1', (req, res) => res.render(__dirname + '/views/templates/room1'));
 
 io.on('connection', function(socket){
   consoleLog('socket', 'connection', 'another user connected');
 
-  socket.broadcast.emit('hi');
-
-  socket.on('chat.join', (data) => {
+  socket.on('chat.join', (data, name) => {
     const json = JSON.parse(data);
 
     //1. save username
     socket.username = json.username;
     socket.userIp = requestIp.getClientIp(socket.request);
+    socket.chatroom = name;
+
+    consoleLog('chat', 'join room', `${socket.username} join channel : ${name}`);
+
+    socket.join(socket.chatroom);
 
     consoleLog('chat', 'join', `${socket.username} has IP ${socket.userIp}`);
 
     client.hmset(`users:${socket.username}`, 'username', socket.username, 'ip', socket.userIp, (err, res) => {
       consoleLog('redis', 'HMSET users', `Add ${socket.username} to user Set`);
-      console.log(res);
     });
 
     //2. broadcast
-    socket.broadcast.emit('chat.join', JSON.stringify({'username': socket.username}));
-    /*client.smembers('users', function(err, res) {
+    client.hgetall(`users:${socket.username}`, function(err, res) {
       if (err) throw(err);
-      console.log(res);
+      socket.broadcast.to(socket.chatroom).emit('chat.join', res);
+    });
 
-      for (let data of res) {
-        socket.emit('chat.join', data);
+    client.keys('users:*', function(err, res) {
+      if (err) throw(err);
+      for (let user of res) {
+        client.hgetall(user, function(err, res) {
+          if (err) throw(err);
+          console.log(res);
+          socket.emit('chat.join', res);
+        });
       }
-    });*/
+    });
+
+    client.smembers('rooms', (err, rooms) => {
+      if (err) throw err;
+
+      socket.broadcast.emit('rooms', rooms);
+      socket.emit('rooms', rooms);
+    });
   });
 
   socket.on('chat.message', function(msg){
     consoleLog('chat', 'message', ('[' + socket.username + ']').bold + 'message : ' + msg);
-    socket.broadcast.emit('chat.message', msg);
+
+    socket.broadcast.to(socket.chatroom).emit('chat.message', msg);
+    socket.emit('chat.message', msg);
   });
+
+  socket.on('room.create', function (user, channel_name) {
+    client.sadd('rooms', channel_name, (err, rooms) => {
+      if (err) throw err;
+
+      consoleLog('redis', 'SET new room', `New channel ${channel_name}`);
+
+      client.smembers('rooms', (err, rooms) => {
+        if (err) throw err;
+
+        socket.broadcast.emit('room.create', rooms);
+        socket.emit('room.create', rooms);
+      });
+    });
+  });
+
 
   socket.on('disconnect', function(){
     console.log('user disconnected');
+    socket.leave(socket.chatroom);
+
+    socket.broadcast.to(socket.chatroom).emit('chat.leave', { username: socket.username });
+    socket.emit('chat.leave', { username: socket.username });
   });
 });
 
