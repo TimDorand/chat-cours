@@ -56,7 +56,7 @@
         socket.on('chat.join', (data) => {
             console.log('chat.join');
             var json = JSON.parse(data);
-            users.append(`<li>${json.username}</li>`);
+            users.append(`<li data-user='${json.username}'>${json.username}</li>`);
         });
 
         socket.on('chat.message', (json) => {
@@ -76,6 +76,14 @@
             username === data.username ? author_msg = "Moi" : author_msg = data.username;
             messages.append(`<li>${author_msg} : ${data.message}</li>`);
         }
+
+        socket.on('chat.disconnect', (json) => {
+            const data = JSON.parse(json);
+
+            console.log(json, data, data.username + ' leave channel');
+
+            users.find(`li[data-user="${data.username}"]`).remove();
+        });
 
     })(jQuery);
 </script>

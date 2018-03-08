@@ -65,6 +65,7 @@ io.on('connection', function(socket){
 
     socket.on('disconnect', function(){
         console.log('user disconnected');
+        socket.broadcast.emit('chat.disconnect', JSON.stringify({username: socket.username}));
     });
 });
 
