@@ -7,11 +7,13 @@ const requestIp = require('request-ip');
 const redis = require("redis");
 const client = redis.createClient();
 
+app.set('view engine', 'ejs');
+
 function consoleLog(event, method, msg = undefined) {
     console.log(event.red + '.' + method.yellow + (msg !== undefined ? (' => ' + msg) : ''));
 }
 
-app.get('/', (req, res) => res.sendFile(__dirname + '/index.html'));
+app.get('/', (req, res) => res.render(__dirname + '/views/templates/index'));
 
 io.on('connection', function(socket){
     consoleLog('socket', 'connection', 'another user connected');
@@ -19,30 +21,29 @@ io.on('connection', function(socket){
     socket.broadcast.emit('hi');
 
     socket.on('chat.join', (data) => {
-        const user_ip = requestIp.getClientIp(socket.request);
         const json = JSON.parse(data);
 
         //1. save username
         socket.username = json.username;
-        socket.userIp = user_ip;
+        socket.userIp = requestIp.getClientIp(socket.request);
 
-        consoleLog('chat', 'join', `${socket.username} has IP ${user_ip}`);
+        consoleLog('chat', 'join', `${socket.username} has IP ${socket.userIp}`);
 
-        client.sadd(['users', JSON.stringify({'username': json.username, 'ip': socket.userIp})], (err, res) => {
-            consoleLog('redis', 'SADD', `Add ${socket.username} to user Set`);
+        client.hmset(`users:${socket.username}`, 'username', socket.username, 'ip', socket.userIp, (err, res) => {
+            consoleLog('redis', 'HMSET users', `Add ${socket.username} to user Set`);
             console.log(res);
         });
 
         //2. broadcast
         socket.broadcast.emit('chat.join', JSON.stringify({'username': socket.username}));
-        client.smembers('users', function(err, res) {
-            if (err) throw(err);
-            console.log(res);
+        /*client.smembers('users', function(err, res) {
+          if (err) throw(err);
+          console.log(res);
 
-            for (let data of res) {
-                socket.emit('chat.join', data);
-            }
-        });
+          for (let data of res) {
+            socket.emit('chat.join', data);
+          }
+        });*/
     });
 
     socket.on('chat.message', function(message){
@@ -52,6 +53,7 @@ io.on('connection', function(socket){
         socket.broadcast.emit('chat.message', json);
         socket.emit('chat.message', json);
     });
+
 
     socket.on('disconnect', function(){
         console.log('user disconnected');

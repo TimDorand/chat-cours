@@ -31,10 +31,17 @@
         var messages = $('#messages ');
         var username;
 
+<<<<<<< HEAD:index.html
         if (typeof(Storage) !== undefined) {
             username = localStorage.getItem('username');
             console.log(`username from localStorage is ${username}`);
         }
+=======
+    if (typeof(Storage) !== undefined) {
+      username = localStorage.getItem('username');
+      console.log(`username from localStorage is ${username}`);
+    }
+>>>>>>> 7205aaf2e0c26b6a35fbdf172cc8702d9141d63c:views/templates/index.ejs
 
         while (username === undefined || username === null || username.trim() === '') {
             username = prompt('What is your username?');
