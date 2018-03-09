@@ -63,28 +63,31 @@
       console.log(`username from localStorage is ${username}`);
     }
 
-    while (username === undefined || username === null || username.trim() === '') {
-      username = prompt('What is your username?');
+        while (username === undefined || username === null || username.trim() === '') {
+            username = prompt('What is your username?');
 
-      if (typeof(Storage) !== undefined) {
-        localStorage.setItem('username', username);
-      }
-    }
+            if (typeof(Storage) !== undefined) {
+                localStorage.setItem('username', username);
+            }
+        }
 
     socket.emit('chat.join', JSON.stringify({ 'username': username }), channel_name);
 
-    cacheSelector.message = $('#m');
-    $('form').submit(function(){
-      socket.emit('chat.message', cacheSelector.message.val());
-      cacheSelector.message.val('');
-      return false;
-    });
+        cacheSelector.message = $('#m');
+        $('form').submit(function(){
+            socket.emit('chat.message', cacheSelector.message.val());
+            cacheSelector.message.val('');
+            return false;
+        });
 
     socket.on('chat.join', (data) => {
       console.log('chat.join');
       users.append(`<li class="${data.username}">${data.username}</li>`);
     });
 
+        socket.on('chat.message', (json) => {
+            showMsg(json);
+        });
     socket.on('chat.message', (message) => {
       messages.append(`<li>${message}</li>`);
     });
@@ -107,7 +110,21 @@
         selectors.rooms.appendChild(div);
       });
     });
-  })(jQuery);
+        socket.on('messages.getAll', (datas) => {
+            datas.forEach(function(msg) {
+                showMsg(msg);
+        })
+            })
+            const data = JSON.parse(json);
+            var author_msg = "";
+            username === data.username ? author_msg = "Moi" : author_msg = data.username;
+            messages.append(`<li>${author_msg} : ${data.message}</li>`);
+        }
+        function showMsg (json) {
+            users.find(`li[data-user="${data.username}"]`).remove();
+    })(jQuery);
+
+            const data = JSON.parse(json);
 </script>
 
 </body>
