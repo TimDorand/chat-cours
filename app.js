@@ -103,6 +103,15 @@ io.on('connection', function(socket){
         socket.broadcast.to(socket.chatroom).emit('chat.leave', { username: socket.username });
         socket.emit('chat.leave', { username: socket.username });
     });
+
+    socket.on('message.tipping', function(username) {
+        socket.broadcast.emit('message.tipping', username);
+    });
+
+    socket.on('message.end_tipping', function(username) {
+        socket.broadcast.emit('message.end_tipping', username);
+    })
+
 });
 
 http.listen(3000, () => console.log('Listening on '  + 'http://localhost:3000\n'.green));

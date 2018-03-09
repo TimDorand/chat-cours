@@ -25,6 +25,7 @@
     </aside>
     <ul id="users"></ul>
     <ul id="messages"></ul>
+    <div id="tipping"></div>
     <form action="">
         <input id="m" autocomplete="off"/>
         <button>Send</button>
@@ -74,10 +75,33 @@
         socket.emit('chat.join', JSON.stringify({ 'username': username }), channel_name);
 
         cacheSelector.message = $('#m');
-        $('form').submit(function(){
-            socket.emit('chat.message', cacheSelector.message.val());
-            cacheSelector.message.val('');
-            return false;
+
+        cacheSelector.message.focusin(function () {
+            socket.emit('message.tipping', username)
+        })
+
+        cacheSelector.message.focusout(function () {
+            socket.emit('message.end_tipping', username)
+        })
+
+        socket.on('message.tipping', function (username) {
+            $('#tipping').append(`<span data-username='${username}'>${username} is tipping...</span>`);
+        })
+
+        socket.on('message.end_tipping', function(username) {
+            $('#tipping').find(`span[data-username="${username}"]`).remove();
+        })
+
+        $('form').submit(function(e){
+            if (cacheSelector.message.val() !== "") {
+                socket.emit('chat.message', cacheSelector.message.val());
+                cacheSelector.message.val('');
+                return false;
+            }
+            else {
+                alert('Trying to send empty message');
+                e.preventDefault();
+            }
         });
 
         socket.on('chat.join', (data) => {
