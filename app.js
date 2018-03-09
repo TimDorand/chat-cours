@@ -78,6 +78,7 @@ io.on('connection', function (socket) {
 
     socket.on('chat.message', function (message) {
         consoleLog('chat', 'message', ('[' + socket.username + ']').bold + ' message : ' + message);
+        const json = JSON.stringify({username: socket.username, message, time: Date.now()});
 
         client.lpush(`messages:${socket.chatroom}`, json, (err, reply) => {
             if (err) throw err;
@@ -90,7 +91,6 @@ io.on('connection', function (socket) {
     socket.on('room.create', function (user, channel_name) {
         client.sadd('rooms', channel_name, (err, reply) => {
             if (err) throw err;
-        const json = JSON.stringify({username: socket.username, message, time: Date.now()});
 
             consoleLog('redis', 'SET new room', `New channel ${channel_name}`);
 
@@ -129,11 +129,11 @@ io.on('connection', function (socket) {
     });
 
     socket.on('message.tipping', function(username) {
-        socket.broadcast.emit('message.tipping', username);
+        socket.broadcast.to(socket.chatroom).emit('message.tipping', username);
     });
 
     socket.on('message.end_tipping', function(username) {
-        socket.broadcast.emit('message.end_tipping', username);
+        socket.broadcast.to(socket.chatroom).emit('message.end_tipping', username);
     })
 
 });

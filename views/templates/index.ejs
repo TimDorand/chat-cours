@@ -86,7 +86,7 @@
         })
 
         socket.on('message.tipping', function (username) {
-            $('#tipping').append(`<span data-username='${username}'>${username} is tipping...</span>`);
+            $('#tipping').append(`<span data-username='${username}'>${username} is tipping...</span> <br>`);
         })
 
         socket.on('message.end_tipping', function(username) {
@@ -154,6 +154,7 @@
 
         socket.on('messages.getAll', (datas) => {
             console.log(datas);
+            datas = datas.reverse();
             document.getElementById('messages').innerHTML = "";
 
             datas.forEach(function(msg) {
