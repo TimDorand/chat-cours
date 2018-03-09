@@ -82,7 +82,7 @@ io.on('connection', function(socket){
   });
 
   socket.on('room.create', function (user, channel_name) {
-    client.sadd('rooms', channel_name, (err, rooms) => {
+    client.sadd('rooms', channel_name, (err, reply) => {
       if (err) throw err;
 
       consoleLog('redis', 'SET new room', `New channel ${channel_name}`);
@@ -95,7 +95,6 @@ io.on('connection', function(socket){
       });
     });
   });
-
 
   socket.on('disconnect', function(){
     console.log('user disconnected');

@@ -93,20 +93,23 @@
       console.log('chat.leave');
       messages.append(`<span>${user.username} leaved the channel</span>`);
       //$(`li.${user.username}`).remove();
-      users.find(`li[data-user="${user.username}"]`).remove();
-
+      users.find(`li[data-username="${user.username}"]`).remove();
     });
 
     socket.on('rooms', (rooms) => {
       rooms.forEach(room => {
-        var div = document.createElement('div');
+        console.log(document.querySelector(`div#${room}`));
+        if (!document.querySelector(`div#${room}`)) {
+          var div = document.createElement('div');
 
-        console.log(room);
-        div.className = 'room';
-        div.id = room;
-        div.innerHTML = `<a href="#">${room}</a>`;
+          console.log(room);
+          div.className = 'room';
+          div.id = room;
+          div.setAttribute('data-channel-name', room);
+          div.innerHTML = `<a href="#">${room}</a>`;
 
-        selectors.rooms.appendChild(div);
+          selectors.rooms.appendChild(div);
+        }
       });
     });
 
