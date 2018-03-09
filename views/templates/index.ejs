@@ -34,98 +34,120 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-  (function ($) {
-    var selectors = {
-      rooms: document.querySelector('.rooms')
-    };
-    var cacheSelector = {};
-    var socket = io();
-    var users = $('#users');
-    var messages = $('#messages');
-    var username;
-    var channel_name = "home";
-    var add_btn = document.querySelector('.add_room');
-    var new_channel_name = document.querySelector('.room_name_input');
+    (function ($) {
+        var selectors = {
+            rooms: document.querySelector('.rooms')
+        };
+        var cacheSelector = {};
+        var socket = io();
+        var users = $('#users');
+        var messages = $('#messages');
+        var username;
+        var channel_name;
+        var add_btn = document.querySelector('.add_room');
+        var new_channel_name = document.querySelector('.room_name_input');
+        var all_rooms;
 
-    add_btn.addEventListener('click', () => {
-      if (new_channel_name.value === '') {
-        alert('new room name cannot be null!!');
-        return;
-      }
-
-      socket.emit('room.create', JSON.stringify({ 'username': username }), new_channel_name.value);
-
-      new_channel_name.value = '';
-    })
-
-    if (typeof(Storage) !== undefined) {
-      username = localStorage.getItem('username');
-      console.log(`username from localStorage is ${username}`);
-    }
-
-    while (username === undefined || username === null || username.trim() === '') {
-      username = prompt('What is your username?');
-
-      if (typeof(Storage) !== undefined) {
-        localStorage.setItem('username', username);
-      }
-    }
-
-    socket.emit('chat.join', JSON.stringify({ 'username': username }), channel_name);
-
-    cacheSelector.message = $('#m');
-    $('form').submit(function(){
-      socket.emit('chat.message', cacheSelector.message.val());
-      cacheSelector.message.val('');
-      return false;
-    });
-
-    socket.on('chat.join', (data) => {
-      console.log('chat.join');
-      users.append(`<li class="${data.username}" data-username="${data.username}">${data.username}</li>`);
-    });
-
-    socket.on('chat.message', (json) => {
-      showMsg(json);
-    });
-
-    socket.on('chat.leave', (user) => {
-      console.log('chat.leave');
-      messages.append(`<span>${user.username} leaved the channel</span>`);
-      //$(`li.${user.username}`).remove();
-      users.find(`li[data-username="${user.username}"]`).remove();
-    });
-
-    socket.on('rooms', (rooms) => {
-      rooms.forEach(room => {
-        console.log(document.querySelector(`div#${room}`));
-        if (!document.querySelector(`div#${room}`)) {
-          var div = document.createElement('div');
-
-          console.log(room);
-          div.className = 'room';
-          div.id = room;
-          div.setAttribute('data-channel-name', room);
-          div.innerHTML = `<a href="#">${room}</a>`;
-
-          selectors.rooms.appendChild(div);
+        if (typeof(Storage) !== undefined) {
+            username = localStorage.getItem('username');
+            console.log(`username from localStorage is ${username}`);
         }
-      });
-    });
 
-    socket.on('messages.getAll', (datas) => {
-      datas.forEach(function(msg) {
-        showMsg(msg);
-      });
-    });
+        while (username === undefined || username === null || username.trim() === '') {
+            username = prompt('What is your username?');
 
-    function showMsg (json) {
-      const data = JSON.parse(json);
-      var author_msg = "";
-      username === data.username ? author_msg = "Moi" : author_msg = data.username;
-      messages.append(`<li>${author_msg} : ${data.message}</li>`);
-    }
-  })(jQuery);
+            if (typeof(Storage) !== undefined) {
+                localStorage.setItem('username', username);
+            }
+        }
+
+        socket.emit('chat.join', JSON.stringify({ 'username': username }), channel_name ? channel_name : 'home');
+
+        add_btn.addEventListener('click', () => {
+            if (new_channel_name.value === '') {
+                alert('new room name cannot be null!!');
+                return;
+            }
+
+            socket.emit('room.create', JSON.stringify({ 'username': username }), new_channel_name.value);
+
+            new_channel_name.value = '';
+        });
+
+        cacheSelector.message = $('#m');
+        $('form').submit(function(){
+            socket.emit('chat.message', cacheSelector.message.val());
+            cacheSelector.message.val('');
+            return false;
+        });
+
+        socket.on('chat.join', (data, channel) => {
+            if (channel) channel_name = channel;
+
+            if (!users.find(`li[data-username="${data.username}"]`)[0]) {
+                users.append(`<li class="user_list" data-username="${data.username}">${data.username}</li>`);
+            }
+        });
+
+        socket.on('chat.message', (json) => {
+            showMsg(json);
+        });
+
+        socket.on('chat.leave', (user) => {
+            messages.append(`<span>${user.username} leaved the channel</span>`);
+            users.find(`li[data-username="${user.username}"]`).remove();
+        });
+
+        socket.on('rooms', (rooms) => {
+            rooms.forEach(room => {
+                current_room = room.replace(' ', '_');
+
+                if (!document.querySelector(`div#${current_room}`)) {
+                    var div = document.createElement('div');
+
+                    div.className = 'room';
+                    div.id = current_room;
+                    div.setAttribute('data-channel-name', current_room);
+                    div.innerHTML = `<a href="#">${room}</a>`;
+
+                    selectors.rooms.appendChild(div);
+                }
+            });
+
+            all_rooms = document.querySelectorAll(".room");
+
+            if (all_rooms !== undefined) {
+                all_rooms.forEach((room) => {
+                    room.addEventListener('click', () => {
+                        console.log(channel_name);
+                        document.getElementById('messages').innerHTML = "";
+
+                        changeRoom(room.dataset.channelName);
+                    });
+                });
+            }
+        });
+
+        socket.on('messages.getAll', (datas) => {
+            console.log(datas);
+            document.getElementById('messages').innerHTML = "";
+
+            datas.forEach(function(msg) {
+                showMsg(msg);
+            });
+        });
+
+        function showMsg (json) {
+            const data = JSON.parse(json);
+            var author_msg = "";
+            username === data.username ? author_msg = "Moi" : author_msg = data.username;
+            messages.append(`<li>${author_msg} : ${data.message}</li>`);
+        }
+
+        function changeRoom (channelName) {
+            socket.emit('room.join', channelName);
+        }
+    })(jQuery);
 </script>
 
 </body>
