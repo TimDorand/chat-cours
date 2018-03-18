@@ -10,15 +10,32 @@
   "license": "MIT",
   "description": "",
   "dependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.4",
+    "babel-preset-env": "^1.6.1",
     "bulma": "^0.6.2",
     "colors": "^1.1.2",
+    "css-loader": "^0.28.10",
     "ejs": "^2.5.7",
     "express": "^4.16.2",
+    "extract-text-webpack-plugin": "^3.0.2",
     "redis": "^2.8.0",
     "request-ip": "^2.0.2",
-    "socket.io": "^2.0.4"
+    "socket.io": "^2.0.4",
+    "style-loader": "^0.20.3",
+    "uglifyjs-webpack-plugin": "^1.2.2"
   },
   "devDependencies": {
+    "del": "^3.0.0",
+    "gulp": "^3.9.1",
+    "gulp-clean-css": "^3.8.0",
+    "gulp-compass": "^2.1.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-if": "^2.0.2",
+    "gulp-load-plugins": "^1.5.0",
+    "gulp-sass": "^3.1.0",
+    "gulp-uglify": "^3.0.0",
+    "gulp-util": "^3.0.8",
     "nodemon": "^1.17.1"
   }
 }

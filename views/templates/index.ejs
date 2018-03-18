@@ -1,179 +1,100 @@
 <!doctype html>
 <html>
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Socket.IO chat</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font: 13px Helvetica, Arial; }
-        form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-        form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-        form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-        #messages { list-style-type: none; margin: 0; padding: 0; }
-        #messages li { padding: 5px 10px; }
-        #messages li:nth-child(odd) { background: #eee; }
-    </style>
+
+    <link rel="stylesheet" href="/dist/css/bulma.css">
 </head>
 <body>
 
-<div>
-    <aside>
-        <div class="rooms"></div>
-        <div class="new_room">
-            <input type="text" class="room_name_input" name="room_name">
-            <button class="add_room">+ Add new room</button>
+<section class="section">
+    <div class="container is-fluid">
+        <nav class="navbar is-transparent">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="https://bulma.io">
+                    <img
+                        src="https://bulma.io/images/bulma-logo.png"
+                        alt="ChatOh : the real time chat"
+                        width="112"
+                        height="28">
+                </a>
+                <div class="navbar-burger burger" data-target="navbarExampleTransparentExample">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+
+            <div id="navbarExampleTransparentExample" class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item" href="/">
+                        Home
+                    </a>
+                </div>
+
+                <div class="navbar-end">
+                    <div class="navbar-item">
+
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="columns">
+            <div class="column">
+                <aside>
+                    <div class="rooms is-12"></div>
+                    <br>
+
+                    <div class="new_room">
+                        <div class="field">
+                            <div class="control">
+                                <input class="input room_name_input" type="text" name="room_name" autocomplete="off"
+                                       placeholder="Your message">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="control is-">
+                                <button type="submit" class="button is-primary add_room">+ Add new room</button>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+            <div class="column is-half">
+                <div class="column">
+                    <ul id="messages"></ul>
+                    <div id="tipping"></div>
+                </div>
+
+                <div class="column">
+                    <form action="">
+                        <div class="field has-addons">
+                            <div class="control is-expanded">
+                                <input class="input" id="m" type="text"  autocomplete="off" placeholder="Your message">
+                            </div>
+                            <div class="control">
+                                <button type="submit" class="button is-primary">SEND</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="column">
+                <h4 class="title is-4">Connected Users</h4>
+                <ul id="users"></ul>
+            </div>
         </div>
-    </aside>
-    <ul id="users"></ul>
-    <ul id="messages"></ul>
-    <div id="tipping"></div>
-    <form action="">
-        <input id="m" autocomplete="off"/>
-        <button>Send</button>
-    </form>
-</div>
+    </div>
+</section>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+
 <script src="/socket.io/socket.io.js"></script>
-<script>
-    (function ($) {
-        var selectors = {
-            rooms: document.querySelector('.rooms')
-        };
-        var cacheSelector = {};
-        var socket = io();
-        var users = $('#users');
-        var messages = $('#messages');
-        var username;
-        var channel_name;
-        var add_btn = document.querySelector('.add_room');
-        var new_channel_name = document.querySelector('.room_name_input');
-        var all_rooms;
-
-        if (typeof(Storage) !== undefined) {
-            username = localStorage.getItem('username');
-            console.log(`username from localStorage is ${username}`);
-        }
-
-        while (username === undefined || username === null || username.trim() === '') {
-            username = prompt('What is your username?');
-
-            if (typeof(Storage) !== undefined) {
-                localStorage.setItem('username', username);
-            }
-        }
-
-        socket.emit('chat.join', JSON.stringify({ 'username': username }), channel_name ? channel_name : 'home');
-
-        add_btn.addEventListener('click', () => {
-            if (new_channel_name.value === '') {
-                alert('new room name cannot be null!!');
-                return;
-            }
-
-            socket.emit('room.create', JSON.stringify({ 'username': username }), new_channel_name.value);
-
-            new_channel_name.value = '';
-        });
-
-        cacheSelector.message = $('#m');
-
-        cacheSelector.message.focusin(function () {
-            socket.emit('message.tipping', username)
-        })
-
-        cacheSelector.message.focusout(function () {
-            socket.emit('message.end_tipping', username)
-        })
-
-        socket.on('message.tipping', function (username) {
-            $('#tipping').append(`<span data-username='${username}'>${username} is tipping...</span> <br>`);
-        })
-
-        socket.on('message.end_tipping', function(username) {
-            $('#tipping').find(`span[data-username="${username}"]`).remove();
-        })
-
-        $('form').submit(function(e){
-            if (cacheSelector.message.val() !== "") {
-                socket.emit('chat.message', cacheSelector.message.val());
-                cacheSelector.message.val('');
-                return false;
-            }
-            else {
-                alert('Trying to send empty message');
-                e.preventDefault();
-            }
-        });
-
-        socket.on('chat.join', (data, channel) => {
-            if (channel) channel_name = channel;
-
-            if (!users.find(`li[data-username="${data.username}"]`)[0]) {
-                users.append(`<li class="user_list" data-username="${data.username}">${data.username}</li>`);
-            }
-        });
-
-        socket.on('chat.message', (json) => {
-            showMsg(json);
-        });
-
-        socket.on('chat.leave', (user) => {
-            messages.append(`<span>${user.username} leaved the channel</span>`);
-            users.find(`li[data-username="${user.username}"]`).remove();
-        });
-
-        socket.on('rooms', (rooms) => {
-            rooms.forEach(room => {
-                current_room = room.replace(' ', '_');
-
-                if (!document.querySelector(`div#${current_room}`)) {
-                    var div = document.createElement('div');
-
-                    div.className = 'room';
-                    div.id = current_room;
-                    div.setAttribute('data-channel-name', current_room);
-                    div.innerHTML = `<a href="#">${room}</a>`;
-
-                    selectors.rooms.appendChild(div);
-                }
-            });
-
-            all_rooms = document.querySelectorAll(".room");
-
-            if (all_rooms !== undefined) {
-                all_rooms.forEach((room) => {
-                    room.addEventListener('click', () => {
-                        console.log(channel_name);
-                        document.getElementById('messages').innerHTML = "";
-
-                        changeRoom(room.dataset.channelName);
-                    });
-                });
-            }
-        });
-
-        socket.on('messages.getAll', (datas) => {
-            console.log(datas);
-            datas = datas.reverse();
-            document.getElementById('messages').innerHTML = "";
-
-            datas.forEach(function(msg) {
-                showMsg(msg);
-            });
-        });
-
-        function showMsg (json) {
-            const data = JSON.parse(json);
-            var author_msg = "";
-            username === data.username ? author_msg = "Moi" : author_msg = data.username;
-            messages.append(`<li>${author_msg} : ${data.message}</li>`);
-        }
-
-        function changeRoom (channelName) {
-            socket.emit('room.join', channelName);
-        }
-    })(jQuery);
-</script>
-
+<script src="/assets/js/socket.js"></script>
 </body>
 </html>

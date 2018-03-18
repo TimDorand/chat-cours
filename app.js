@@ -1,13 +1,18 @@
 require('colors');
 
-const app = require('express')();
+const express = require('express');
+
+const app = express();
+
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const requestIp = require('request-ip');
 const redis = require("redis");
+
 const client = redis.createClient();
 
 app.set('view engine', 'ejs');
+app.use(express.static('views'));
 
 function consoleLog(event, method, msg = undefined) {
     console.log(event.red + '.' + method.yellow + (msg !== undefined ? (' => ' + msg) : ''));
