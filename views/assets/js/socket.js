@@ -12,9 +12,6 @@
     var new_channel_name = document.querySelector('.room_name_input');
     var all_rooms;
 
-
-
-
     if (typeof(Storage) !== undefined) {
         username = localStorage.getItem('username');
         console.log(`username from localStorage is ${username}`);
@@ -27,6 +24,10 @@
             localStorage.setItem('username', username);
         }
     }
+
+    var scrollbottom = function () {
+        messages.scrollTop(messages[0].scrollHeight);
+    };
 
     socket.emit('chat.join', JSON.stringify({ 'username': username }), channel_name ? channel_name : 'home');
 
@@ -74,6 +75,10 @@
 
     socket.on('chat.join', (data, channel) => {
         if (channel) channel_name = channel;
+        data.username = data.username === username ? 'vous' : data.username;
+        console.log(data.username);
+
+        scrollbottom();
 
         if (!users.find(`li[data-username="${data.username}"]`)[0]) {
             users.append(`
@@ -87,6 +92,7 @@
 
     socket.on('chat.message', (json) => {
         showMsg(json);
+        scrollbottom();
     });
 
     socket.on('chat.leave', (user) => {
