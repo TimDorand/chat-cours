@@ -131,6 +131,10 @@ io.on('connection', function (socket) {
 
         socket.broadcast.to(socket.chatroom).emit('chat.leave', {username: socket.username});
         socket.emit('chat.leave', {username: socket.username});
+
+        client.del(`users:${socket.username}`, function(err, reply) {
+            consoleLog('chat', 'disconnect', ('[' + socket.username + ']').bold + ' leave the channel');
+        });
     });
 
     socket.on('message.tipping', function(username) {
