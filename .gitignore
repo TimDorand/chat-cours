@@ -91,3 +91,4 @@ Blog
 About
 
 .idea/
+/views/assets/scss/*

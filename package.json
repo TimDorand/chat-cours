@@ -4,7 +4,8 @@
   "main": "app.js",
   "scripts": {
     "start": "nodemon",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "sass-watch": "sass --watch views/assets/scss/style.scss:views/dist/css/style.css "
   },
   "author": "",
   "license": "MIT",
