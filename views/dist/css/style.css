@@ -2,4 +2,54 @@ ul#messages {
   height: 80vh;
   overflow: auto; }
 
+.main-content {
+  margin-top: 30px; }
+
+.btn {
+  margin-top: 15px; }
+
+.msg {
+  max-width: 80%;
+  margin-bottom: 10px;
+  padding: 5px 10px 7px 10px;
+  border-radius: 15px;
+  list-style: none; }
+
+.other-msg {
+  color: black;
+  background-color: #f0f0f0;
+  float: left; }
+
+.own-msg {
+  color: white;
+  background-color: #4080ff;
+  float: right; }
+
+.float-right {
+  float: right; }
+
+#messages {
+  padding: 20px 20px 0 20px; }
+
+.name {
+  padding-left: 5px;
+  color: #969696; }
+
+#users {
+  list-style: none;
+  padding-left: 0; }
+
+#tipping {
+  margin-bottom: 20px; }
+
+.btn-room {
+  width: 100%; }
+
+.rooms {
+  margin-bottom: 20px; }
+
+.msg-container {
+  height: 80vh;
+  overflow: scroll; }
+
 /*# sourceMappingURL=style.css.map */

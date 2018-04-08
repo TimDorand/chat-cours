@@ -8,6 +8,7 @@ const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const requestIp = require('request-ip');
 const redis = require("redis");
+const insult = require("./api/insult.js");
 
 const client = redis.createClient();
 
@@ -83,6 +84,10 @@ io.on('connection', function (socket) {
 
     socket.on('chat.message', function (message) {
         consoleLog('chat', 'message', ('[' + socket.username + ']').bold + ' message : ' + message);
+
+        // Need to pass a sentence and the insultDetector return a new sentence without insults :)
+        message = insult.insultDetector(message);
+
         const json = JSON.stringify({username: socket.username, message, time: Date.now()});
 
         client.lpush(`messages:${socket.chatroom}`, json, (err, reply) => {

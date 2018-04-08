@@ -9,7 +9,7 @@
     var username;
     var channel_name;
     var add_btn = document.querySelector('.add_room');
-    var new_channel_name = document.querySelector('.room_name_input');
+    var new_channel_name = document.querySelector('#room_name_input');
     var all_rooms;
 
     if (typeof(Storage) !== undefined) {
@@ -53,11 +53,11 @@
     });
 
     socket.on('message.tipping', function (username) {
-        $('#tipping').append(`<span data-username='${username}'>${username} is tipping...</span>`);
+        $('#events').append(`<span data-username='${username}'>${username} est en train d'écrire <img style="width: 60px;" src="/dist/img/loader.png" alt=""><br></span>`);
     });
 
     socket.on('message.end_tipping', function(username) {
-        $('#tipping').find(`span[data-username="${username}"]`).remove();
+        $('#events').find(`span[data-username="${username}"]`).remove();
     });
 
     $('form').submit(function(e){
@@ -110,20 +110,10 @@
                 div.className = 'room';
                 div.id = current_room;
                 div.setAttribute('data-channel-name', current_room);
-                div.innerHTML = `
-                    <div class="tile is-ancestor">
-                        <div class="tile is-vertical is-12 is-expanded">
-                            <div class="tile">
-                                <div class="tile is-parent is-vertical">
-                                    <article class="tile is-child notification is-primary has-text-centered">
-                                        <b>${room}</b>
-                                    </article>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`;
+                div.innerHTML =  `<button class="btn btn-primary btn-room" >${room}</button>`;
 
                 selectors.rooms.appendChild(div);
+                changeRoom(current_room);
             }
         });
 
@@ -139,10 +129,11 @@
                 });
             });
         }
+
+        scrollbottom();
     });
 
     socket.on('messages.getAll', (datas) => {
-        console.log(datas);
         datas = datas.reverse();
         document.getElementById('messages').innerHTML = "";
 
@@ -154,17 +145,42 @@
     function showMsg (json) {
         const data = JSON.parse(json);
         var author_msg = "";
-        username === data.username ? author_msg = "Moi" : author_msg = data.username;
+        var class_msg = "";
+        var float = "";
+
+        var timestamp = new Date(data.time);
+
+        var date = timestamp.getDate();
+        var month = timestamp.getMonth()+1;
+        var year = timestamp.getFullYear();
+        var hour = timestamp.getHours();
+        var minute = timestamp.getMinutes();
+
+        if (minute < 10) minute = '0' + minute;
+
+        var original_date = "le " + date + '/' + month + '/' + year + ' à ' + hour + 'h' + minute;
+
+        if (username === data.username) {
+            author_msg = original_date;
+            class_msg = 'own-msg';
+            float = 'float-right';
+        }
+        else {
+            author_msg = data.username + ' ' + original_date;
+            class_msg = 'other-msg';
+        }
+
         messages.append(`
-            <i>${author_msg}</i>
-            <div class="notification ${ author_msg === "Moi" ? 'is-info' : 'is-primary' }">
-              <!--<button class="delete"></button>-->
-              ${data.message}
+            <div class="row">
+                <span class="name ${float}">${author_msg}</span><br>
+                <li class="msg ${class_msg}">${data.message}</li>
             </div>
         `);
     }
 
     function changeRoom (channelName) {
         socket.emit('room.join', channelName);
+        $(".btn-room").removeClass('btn-success').addClass('btn-primary');
+        $('#'+channelName).find('.btn-room').removeClass('btn-primary').addClass('btn-success');
     }
 })(jQuery);
