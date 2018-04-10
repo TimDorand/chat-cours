@@ -34,6 +34,8 @@ $ yarn start
 
 ```js
 {
-  "username": "John Doe"
+  "username": "John Doe",
+  "ip": "127.0.0.1"
 }
+
 ```

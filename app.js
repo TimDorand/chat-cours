@@ -20,7 +20,6 @@ function consoleLog(event, method, msg = undefined) {
 }
 
 app.get('/', (req, res) => res.render(__dirname + '/views/templates/index'));
-app.get('/room1', (req, res) => res.render(__dirname + '/views/templates/room1'));
 
 io.on('connection', function (socket) {
     consoleLog('socket', 'connection', 'another user connected');
@@ -62,7 +61,6 @@ io.on('connection', function (socket) {
             for (let user of res) {
                 client.hgetall(user, function (err, res) {
                     if (err) throw(err);
-                    console.log(res);
                     socket.emit('chat.join', res, socket.chatroom);
                 });
             }

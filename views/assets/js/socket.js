@@ -61,7 +61,6 @@
     });
 
     $('form').submit(function(e){
-        console.log(cacheSelector.message.val());
         if (cacheSelector.message.val() !== "") {
             socket.emit('chat.message', cacheSelector.message.val());
             cacheSelector.message.val('');
@@ -76,7 +75,6 @@
     socket.on('chat.join', (data, channel) => {
         if (channel) channel_name = channel;
         data.username = data.username === username ? 'vous' : data.username;
-        console.log(data.username);
 
         scrollbottom();
 
@@ -110,7 +108,7 @@
                 div.className = 'room';
                 div.id = current_room;
                 div.setAttribute('data-channel-name', current_room);
-                div.innerHTML =  `<button class="btn btn-primary btn-room" >${room}</button>`;
+                div.innerHTML =  `<button class="btn btn-primary btn-room">${room}</button>`;
 
                 selectors.rooms.appendChild(div);
                 changeRoom(current_room);
@@ -122,7 +120,6 @@
         if (all_rooms !== undefined) {
             all_rooms.forEach((room) => {
                 room.addEventListener('click', () => {
-                    console.log(channel_name);
                     document.getElementById('messages').innerHTML = "";
 
                     changeRoom(room.dataset.channelName);
