@@ -10,7 +10,12 @@ const requestIp = require('request-ip');
 const redis = require("redis");
 const insult = require("./api/insult.js");
 
-const client = redis.createClient();
+const options = {
+  host: 'redis',
+  port: 6379,
+  logErrors: true
+};
+const client = redis.createClient(options);
 
 app.set('view engine', 'ejs');
 app.use(express.static('views'));
