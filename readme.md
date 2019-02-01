@@ -1,5 +1,4 @@
 # Chat
------
 Socket io chat with chartrooms and Messenger look and feel.
 
 ## Run the chat with docker
