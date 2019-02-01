@@ -12,6 +12,8 @@ docker-compose version 1.23.2, build 1110ad01
 ```
 
 ```
+git clone https://github.com/TimDorand/chat-cours
+cd chat-cours
 docker-compose up --build
 ```
 
