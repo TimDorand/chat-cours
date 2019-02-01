@@ -1,8 +1,8 @@
 # Chat
 -----
-Socket io chat with chartrooms and Messenger
+Socket io chat with chartrooms and Messenger look and feel.
 
-## Docker
+## Run the chat with docker
 
 Prerequisites
 ```
@@ -16,14 +16,17 @@ docker-compose version 1.23.2, build 1110ad01
 docker-compose up --build
 ```
 
+![Demo chat](http://g.recordit.co/ymP9OKMjzm.gif)
+
+
 [Access local chat (http://localhost:8080)](http://localhost:8888)
 
-[Access cAdvisor](http://localhost:8080)
+### Monitoring
 
-[Access grafana](localhost:3000)
+- [cAdvisor](http://localhost:8080)
 
+- [grafana](http://localhost:3000)
 
-![Demo chat](http://g.recordit.co/ymP9OKMjzm.gif)
 
 
 ## Without Docker Setup
@@ -65,3 +68,7 @@ $ yarn start
 }
 
 ```
+
+
+
+> Timothée Dorand, Arthur Leroux, Camil Mesfioui
