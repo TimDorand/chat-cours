@@ -14,8 +14,13 @@ docker-compose version 1.23.2, build 1110ad01
 docker-compose up --build
 ```
 
-Access http://localhost:3000
+[Access local chat http://localhost:8080](http://localhost:8080)
 
+[Access cAdvisor](http://localhost:8080)
+[Access grafana](localhost:3000)
+
+
+![Demo chat](http://g.recordit.co/ymP9OKMjzm.gif)
 
 
 ## Without Docker Setup

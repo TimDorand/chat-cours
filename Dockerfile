@@ -15,7 +15,7 @@ RUN npm install
 # RUN npm install --only=production
 
 # Bundle app source
-COPY . .
+COPY ./app .
 
 ## Launch the wait tool and then your application
 CMD npm start
