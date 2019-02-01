@@ -1,4 +1,6 @@
-#Chat
+# Chat
+-----
+Socket io chat with chartrooms and Messenger
 
 ## Docker
 
@@ -14,9 +16,10 @@ docker-compose version 1.23.2, build 1110ad01
 docker-compose up --build
 ```
 
-[Access local chat http://localhost:8080](http://localhost:8080)
+[Access local chat (http://localhost:8080)](http://localhost:8888)
 
 [Access cAdvisor](http://localhost:8080)
+
 [Access grafana](localhost:3000)
 
 
